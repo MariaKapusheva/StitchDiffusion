@@ -26,7 +26,6 @@ from typing import Optional
 from PIL import Image, ImageOps
 import numpy as np
 
-# --- Stable Diffusion imports ---
 # Use diffusers + torch. Make sure these packages are installed before running.
 try:
     import torch
@@ -43,16 +42,9 @@ def load_pipeline(model_id: str = "runwayml/stable-diffusion-v1-5",
                   device: Optional[str] = None,
                   use_auth_token: Optional[str] = None,
                   enable_xformers: bool = True):
-    """
-    Loads a Stable Diffusion pipeline. Returns pipeline object (on chosen device).
-    - model_id: HF model id (default example).
-    - device: "cuda" or "cpu" or None (auto-detect).
-    - use_auth_token: string or None. If None, will try anonymous access (may fail depending on model).
-    """
     if device is None:
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    # For faster performance use torch.float16 on GPU if available
     torch_dtype = torch.float16 if (device.startswith("cuda") and torch.cuda.is_available()) else torch.float32
 
     pipe = DiffusionPipeline.from_pretrained(
@@ -84,9 +76,6 @@ def generate_images(pipe,
                     steps: int = 20,
                     guidance_scale: float = 7.5,
                     seed: Optional[int] = None):
-    """
-    Generate images with the pipeline and return list of PIL Images.
-    """
     generator = None
     if seed is None:
         seed = random.randrange(2**31 - 1)
@@ -100,37 +89,22 @@ def generate_images(pipe,
                    num_inference_steps=steps,
                    guidance_scale=guidance_scale,
                    generator=generator)
-        img = out.images[0].convert("RGBA")  # keep alpha if present
+        img = out.images[0].convert("RGBA")  
         results.append(img)
-        # Slightly change seed for next image to get variation
         generator = torch.Generator(device=pipe.device).manual_seed(seed + i + 1)
 
     return results, seed
 
 
-# --- Postprocessing helpers ---
-
 def reduce_colors_adaptive(img: Image.Image, n_colors: int = 12) -> Image.Image:
-    """
-    Reduce image to n_colors using an adaptive palette (PIL).
-    Returns an RGB image with a reduced palette.
-    """
-    # convert to RGB first
     rgb = img.convert("RGB")
-    # use adaptive palette (PIL will choose representative colors)
     p = rgb.convert("P", palette=Image.ADAPTIVE, colors=n_colors)
-    # convert back to RGB to keep consistency for later operations
     reduced = p.convert("RGB")
     return reduced
 
 
 def resize_to_pattern_grid(img: Image.Image, pattern_size: int = 40) -> Image.Image:
-    """
-    Resize image to a pattern grid of (pattern_size x pattern_size) using nearest neighbor
-    so each pixel corresponds to one stitch.
-    Returns the small grid image (pattern_size x pattern_size).
-    """
-    # If image is not square, we center-crop to square first (keeps composition)
+    # If image is not square, we center-crop to square first
     w, h = img.size
     min_side = min(w, h)
     img_sq = ImageOps.fit(img, (min_side, min_side), method=Image.NEAREST, centering=(0.5, 0.5))
@@ -139,9 +113,6 @@ def resize_to_pattern_grid(img: Image.Image, pattern_size: int = 40) -> Image.Im
 
 
 def save_scaled_preview(small_img: Image.Image, scale: int = 16, out_path: Path = None):
-    """
-    Save a scaled-up preview of the small pattern so humans can easily view it (nearest neighbor scaling).
-    """
     big = small_img.resize((small_img.width * scale, small_img.height * scale), resample=Image.NEAREST)
     if out_path:
         big.save(out_path)
@@ -152,7 +123,6 @@ def ensure_dir(path: Path):
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
-# --- Main CLI ---
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Stable Diffusion image and post-process for cross-stitch patterns.")
@@ -173,17 +143,14 @@ def main():
     parser.add_argument("--preview_scale", type=int, default=16, help="Scale factor for preview image (e.g., 16)")
     args = parser.parse_args()
 
-    # If token not provided as argument, check env var
     hf_token = args.hf_token or os.environ.get("HF_TOKEN")
 
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Load pipeline
     print(f"[info] loading model {args.model_id} on device {args.device or 'auto'}...")
     pipe = load_pipeline(model_id=args.model_id, device=args.device, use_auth_token=hf_token)
 
-    # Prepare prompts
     prompts = []
     if args.prompt_file:
         with open(args.prompt_file, "r", encoding="utf-8") as f:
@@ -195,7 +162,6 @@ def main():
             raise SystemExit("Please provide --prompt or --prompt_file")
         prompts = [args.prompt]
 
-    # For each prompt generate images
     total_generated = 0
     for p in prompts:
         print(f"[info] generating for prompt: {p!r}")
@@ -218,17 +184,14 @@ def main():
             print(f"  - saving raw image to {raw_path}")
             img.save(raw_path)
 
-            # Reduce colors
             print(f"  - reducing to {args.n_colors} colors...")
             reduced = reduce_colors_adaptive(img, n_colors=args.n_colors)
             reduced.save(reduced_path)
 
-            # Resize to pattern grid
             print(f"  - resizing to pattern grid {args.pattern_size}x{args.pattern_size} (nearest neighbor)")
             small = resize_to_pattern_grid(reduced, pattern_size=args.pattern_size)
             small.save(small_path)
 
-            # Save a scaled preview for easy visual check
             print(f"  - saving preview (scale={args.preview_scale}) to {preview_path}")
             save_scaled_preview(small, scale=args.preview_scale, out_path=preview_path)
 

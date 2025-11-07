@@ -12,7 +12,6 @@ SAVE_DIR = Path("edited_outputs")
 
 
 def load_image_as_grid(image_path):
-    """Loads the small pattern image (e.g. 40x40) and returns a 2D array of RGB tuples."""
     img = Image.open(image_path).convert("RGB")
     w, h = img.size
     pixels = list(img.getdata())
@@ -21,7 +20,6 @@ def load_image_as_grid(image_path):
 
 
 def draw_grid(screen, grid, palette_index):
-    """Draws the grid on screen with visible cells and palette highlight."""
     screen.fill(BG_COLOR)
     h = len(grid)
     w = len(grid[0])
@@ -32,20 +30,17 @@ def draw_grid(screen, grid, palette_index):
             rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
             pygame.draw.rect(screen, color, rect)
 
-    # Grid lines
     for x in range(w + 1):
         pygame.draw.line(screen, GRID_LINE_COLOR, (x * CELL_SIZE, 0), (x * CELL_SIZE, h * CELL_SIZE))
     for y in range(h + 1):
         pygame.draw.line(screen, GRID_LINE_COLOR, (0, y * CELL_SIZE), (w * CELL_SIZE, y * CELL_SIZE))
 
-    # Display active palette color (in a corner)
     active_color = PALETTE[palette_index]
     pygame.draw.rect(screen, active_color, pygame.Rect(10, 10, 40, 40))
     pygame.display.set_caption(f"Cross Stitch Editor - Active Color {palette_index+1}")
 
 
 def save_grid_as_image(grid, filename):
-    """Save current grid as PNG."""
     h = len(grid)
     w = len(grid[0])
     img = Image.new("RGB", (w, h))
@@ -97,7 +92,7 @@ def run_editor(image_path):
     pygame.quit()
 
 
-# Example default palette (expandable)
+# Example default palette
 PALETTE = [
     (0, 0, 0),          # 1 black
     (255, 255, 255),    # 2 white
