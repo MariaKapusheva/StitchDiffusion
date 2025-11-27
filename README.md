@@ -3,7 +3,7 @@
 ## Setting up
 Run in a cmd/any bash terminal
 ``` python -m venv venv ```
-``` venv\Scritps\activate ```
+``` venv\Scripts\activate ```
 ``` pip install -r requirements.txt ```
 
 ## To create a pattern
