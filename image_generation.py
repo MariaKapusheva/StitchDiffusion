@@ -49,7 +49,7 @@ def load_pipeline(model_id: str = "runwayml/stable-diffusion-v1-5",
 
     pipe = DiffusionPipeline.from_pretrained(
         model_id,
-        torch_dtype=torch_dtype,
+        torch_dtype=torch.float32,
         use_auth_token=use_auth_token,  # If None, diffusers will try anonymous access
         safety_checker=None
     )
@@ -71,8 +71,8 @@ def load_pipeline(model_id: str = "runwayml/stable-diffusion-v1-5",
 def generate_images(pipe,
                     prompt: str,
                     num_images: int = 1,
-                    height: int = 512,
-                    width: int = 512,
+                    height: int = 256,
+                    width: int = 256,
                     steps: int = 20,
                     guidance_scale: float = 7.5,
                     seed: Optional[int] = None):
