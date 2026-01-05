@@ -21,4 +21,4 @@ You'll have to copy the relative path to the pattern image and add is a CL argum
 
 A pygame window with the pattern will appear where you can edit it yourself and change the colours and the resolution of the image.  
 
-<img width="1101" height="883" alt="resolution68x68" src="https://github.com/user-attachments/assets/92921e69-8fa4-4119-9c74-6c4818183999" />  
+<img width="500" height="400" alt="resolution68x68" src="https://github.com/user-attachments/assets/92921e69-8fa4-4119-9c74-6c4818183999" />  
