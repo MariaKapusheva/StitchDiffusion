@@ -8,7 +8,7 @@ Run in a cmd/any bash terminal
 
 ## To create a pattern
 You have to run image_generation.py. You can find all of the possible command line arguments in the code, but just as an example of what was used to generate the raven pattern:
-``` python image_generation.py --prompt "raven pixel art, flat colors, minimal shading, simple composition, 40x40 cross stitch design" --model_id "stable-diffusion-v1-5/stable-diffusion-v1-5"--pattern_size 40 --n_colors 10 --num_images 1 --steps 20 --guidance_scale 7.5 --out_dir outputs/fox_pattern ```
+``` python image_generation.py --prompt "raven pixel art, flat colors, minimal shading, simple composition, 40x40 cross stitch design" --model_id "stable-diffusion-v1-5/stable-diffusion-v1-5" --pattern_size 40 --n_colors 10 --num_images 1 --steps 20 --guidance_scale 7.5 --out_dir outputs/fox_pattern ```
 
 That will create a subfolder in your outputs folder with all images. You can also use txt files as prompts if you would like to make more than one image. If that is the case you can run a command like this:
 
